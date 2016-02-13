@@ -1,0 +1,4 @@
+elastic:                                                         
+  image: elasticsearch   
+  volumes:                                                       
+   - /opt/data/esBBB:/var/lib/elasticsearch  

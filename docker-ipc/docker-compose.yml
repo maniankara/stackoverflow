@@ -1,0 +1,7 @@
+javacl:
+  build: ./javacl
+  hostname: java-server  
+pythoncl:
+  build: ./pythoncl
+  links: 
+    - "javacl"
