@@ -11,11 +11,13 @@ import (
 	"net/url"
 	"strings"
 	"time"
+	"sync"
 )
 
 var alreadyCrawledList []string
 var pending []string
 var brokenLinks []string
+var mutex = &sync.Mutex{}
 
 const localHostWithPort = "localhost:8080"
 
@@ -38,19 +40,26 @@ func IsLinkAlreadyCrawled(link string) bool {
 }
 
 func AddLinkInAlreadyCrawledList(link string) {
+	mutex.Lock()
 	alreadyCrawledList = append(alreadyCrawledList, link)
+	mutex.Unlock()
 }
 
 func AddLinkInPendingQueue(link string) {
+	mutex.Lock()
 	pending = append(pending, link)
+	mutex.Unlock()
 }
 
 func AddLinkInBrokenLinksQueue(link string) {
+	mutex.Lock()
 	brokenLinks = append(brokenLinks, link)
+	mutex.Unlock()
 }
 
 func TestBrokenLinks(links []string) {
 	start := time.Now()
+	done := make(chan bool, len(links))
 	for _, link := range links {
 		AddLinkInPendingQueue(link)
 	}
@@ -59,9 +68,16 @@ func TestBrokenLinks(links []string) {
 		x := pending[0]
 		pending = pending[1:]
 
-		if err := crawlPage(x); err != nil {
-			fmt.Errorf(err.Error())
-		}
+		go func(x string) {
+			if err := crawlPage(x); err != nil {
+				fmt.Errorf(err.Error())
+			}
+			done <- true
+		}(x)
+
+	}
+	for i := 0; i < len(links); i++ {
+		<- done
 	}
 	duration := time.Since(start)
 	fmt.Println("________________")
