@@ -4,15 +4,18 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"log"
 )
 
 func main() {
 
 	fmt.Println("Starting server in port: 8080")
 	rootHandler := func(w http.ResponseWriter, r *http.Request) {
+		log.Output(1, "Request /about received")
 		fmt.Fprintln(w, "This is about us: /about")
 	}
 	homeHandler := func(w http.ResponseWriter, r *http.Request) {
+		log.Output(1, "Request /home received")
 		fmt.Fprintln(w, "Welcome to: /home")
 	}
 
